@@ -1,0 +1,118 @@
+<!-- add-product.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Product - FIPPRO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #117a8b;
+        }
+        .message {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .message.error { color: red; }
+        .message.success { color: green; }
+    </style>
+</head>
+<body>
+    <body>
+    <div class="container">
+        <h2>Add Product</h2>
+        <div id="message" class="message"></div>
+        <input type="text" id="name" placeholder="Product Name">
+        <input type="number" id="price" placeholder="Price" min="0">
+        <input type="number" id="quantity" placeholder="Quantity" min="0">
+        <button onclick="addProduct()">Add Product</button>
+    </div>
+
+    <script>
+        async function addProduct() {
+            const userId = localStorage.getItem("userId");
+            if (!userId) {
+                alert("Please login first");
+                window.location.href = "home.html";
+                return;
+            }
+
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const quantity = document.getElementById('quantity').value;
+            const messageDiv = document.getElementById('message');
+
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+
+            if (!name || !price || !quantity) {
+                messageDiv.textContent = 'Please fill in all required fields';
+                messageDiv.classList.add('error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/products/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, name, price, quantity })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageDiv.textContent = 'Product added successfully!';
+                    messageDiv.classList.add('success');
+
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    messageDiv.textContent = data.message || 'Failed to add product';
+                    messageDiv.classList.add('error');
+                }
+            } catch (err) {
+                console.error(err);
+                messageDiv.textContent = 'Server error, try again later';
+                messageDiv.classList.add('error');
+            }
+        }
+    </script>
+</body>
+
+</html>

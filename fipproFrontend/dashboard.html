@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - FIPPRO</title>
+    <link rel="stylesheet" href="assets/global.css">
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <h2>Welcome, <span id="userName"></span></h2>
+        <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <nav>
+            <a href="#" class="nav-item" data-page="dashboard-summary">Dashboard Summary</a>
+            <a href="#" class="nav-item" data-page="add-expense">Add Expense</a>
+            <a href="#" class="nav-item" data-page="add-income">Add Income</a>
+            <a href="#" class="nav-item" data-page="add-product">Add Product</a>
+            <a href="#" class="nav-item" data-page="expense-summary">Expense Summary</a>
+            <a href="#" class="nav-item" data-page="income-summary">Income Summary</a>
+            <a href="#" class="nav-item" data-page="product-summary">Product Summary</a>
+        </nav>
+    </div>
+
+    <!-- Main content -->
+    <div class="container" id="mainContainer">
+        <!-- Content will be loaded dynamically here -->
+    </div>
+
+    <script>
+        const userId = localStorage.getItem("userId");
+        const userName = localStorage.getItem("userName");
+
+        if (!userId) {
+            window.location.href = "homepage.html";
+        }
+
+        document.getElementById("userName").textContent = userName;
+
+        // Logout button
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.clear();
+            window.location.href = "homepage.html";
+        });
+
+        const mainContainer = document.getElementById("mainContainer");
+
+        // Sidebar navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = item.dataset.page;
+                loadPage(page);
+            });
+        });
+
+        async function loadPage(page) {
+            mainContainer.innerHTML = '<p>Loading...</p>';
+            switch(page) {
+                case "dashboard-summary":
+                    loadDashboardSummary();
+                    break;
+                case "add-expense":
+                    loadAddExpense();
+                    break;
+                case "add-income":
+                    loadAddIncome();
+                    break;
+                case "add-product":
+                    loadAddProduct();
+                    break;
+                case "expense-summary":
+                    loadExpenseSummary();
+                    break;
+                case "income-summary":
+                    loadIncomeSummary();
+                    break;
+                case "product-summary":
+                    loadProductSummary();
+                    break;
+                default:
+                    mainContainer.innerHTML = '<p>Page not found</p>';
+            }
+        }
+
+        // ----------- Page Functions -----------
+
+        // Dashboard summary
+        async function loadDashboardSummary() {
+            try {
+                const res = await fetch(`http://localhost:8080/api/dashboard/summary/${userId}`);
+                const data = await res.json();
+                mainContainer.innerHTML = `
+                    <h1>Dashboard Summary</h1>
+                    <div class="grid grid-cols-4">
+                        <div class="card summary">
+                            <div class="left">
+                                <div class="icon" style="background:#ef4444;">E</div>
+                                <div class="meta">
+                                    <div class="label">Total Expenses</div>
+                                    <div class="value">${data.totalExpense}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card summary">
+                            <div class="left">
+                                <div class="icon" style="background:#10b981;">I</div>
+                                <div class="meta">
+                                    <div class="label">Total Income</div>
+                                    <div class="value">${data.totalIncome}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card summary">
+                            <div class="left">
+                                <div class="icon" style="background:#3b82f6;">P</div>
+                                <div class="meta">
+                                    <div class="label">Total Products</div>
+                                    <div class="value">${data.totalProducts}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch(err) {
+                console.error(err);
+                mainContainer.innerHTML = '<p>Error loading dashboard</p>';
+            }
+        }
+
+        // Add Expense Page
+        function loadAddExpense() {
+            mainContainer.innerHTML = `
+                <h2>Add Expense</h2>
+                <div id="message" class="message"></div>
+                <input type="number" id="amount" placeholder="Amount" min="0">
+                <select id="category">
+                    <option value="">Select Category</option>
+                    <option value="Food">Food</option>
+                    <option value="Transport">Transport</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Bills">Bills</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="date" id="date">
+                <textarea id="description" placeholder="Description"></textarea>
+                <button onclick="submitExpense()">Add Expense</button>
+            `;
+        }
+
+        async function submitExpense() {
+            const amount = document.getElementById('amount').value;
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+            const description = document.getElementById('description').value;
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+
+            if (!amount || !category || !date) {
+                messageDiv.textContent = 'Please fill all required fields';
+                messageDiv.classList.add('error');
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:8080/api/expenses/add', {
+                    method:'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({userId, amount, category, date, description})
+                });
+                if(res.ok){
+                    messageDiv.textContent = 'Expense added successfully!';
+                    messageDiv.classList.add('success');
+                    setTimeout(loadDashboardSummary, 1000); // redirect back to dashboard summary dynamically
+                } else {
+                    messageDiv.textContent = 'Failed to add expense';
+                    messageDiv.classList.add('error');
+                }
+            } catch(err) {
+                console.error(err);
+                messageDiv.textContent = 'Server error';
+                messageDiv.classList.add('error');
+            }
+        }
+
+        // Add Income Page
+        function loadAddIncome() {
+            mainContainer.innerHTML = `
+                <h2>Add Income</h2>
+                <div id="message" class="message"></div>
+                <input type="number" id="amount" placeholder="Amount" min="0">
+                <input type="text" id="source" placeholder="Source">
+                <input type="date" id="date">
+                <textarea id="description" placeholder="Description"></textarea>
+                <button onclick="submitIncome()">Add Income</button>
+            `;
+        }
+
+        async function submitIncome() {
+            const amount = document.getElementById('amount').value;
+            const source = document.getElementById('source').value;
+            const date = document.getElementById('date').value;
+            const description = document.getElementById('description').value;
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+
+            if (!amount || !source || !date) {
+                messageDiv.textContent = 'Please fill all required fields';
+                messageDiv.classList.add('error');
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:8080/api/incomes/add', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({userId, amount, source, date, description})
+                });
+                if(res.ok){
+                    messageDiv.textContent = 'Income added successfully!';
+                    messageDiv.classList.add('success');
+                    setTimeout(loadDashboardSummary, 1000);
+                } else {
+                    messageDiv.textContent = 'Failed to add income';
+                    messageDiv.classList.add('error');
+                }
+            } catch(err) {
+                console.error(err);
+                messageDiv.textContent = 'Server error';
+                messageDiv.classList.add('error');
+            }
+        }
+
+        // Add Product Page
+        function loadAddProduct() {
+            mainContainer.innerHTML = `
+                <h2>Add Product</h2>
+                <div id="message" class="message"></div>
+                <input type="text" id="name" placeholder="Product Name">
+                <input type="number" id="price" placeholder="Price" min="0">
+                <input type="number" id="quantity" placeholder="Quantity" min="0">
+                <button onclick="submitProduct()">Add Product</button>
+            `;
+        }
+
+        async function submitProduct() {
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const quantity = document.getElementById('quantity').value;
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+
+            if(!name || !price || !quantity){
+                messageDiv.textContent = 'Please fill all required fields';
+                messageDiv.classList.add('error');
+                return;
+            }
+
+            try{
+                const res = await fetch('http://localhost:8080/api/products/add',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({userId,name,price,quantity})
+                });
+                if(res.ok){
+                    messageDiv.textContent = 'Product added successfully!';
+                    messageDiv.classList.add('success');
+                    setTimeout(loadDashboardSummary, 1000);
+                } else {
+                    messageDiv.textContent = 'Failed to add product';
+                    messageDiv.classList.add('error');
+                }
+            } catch(err){
+                console.error(err);
+                messageDiv.textContent = 'Server error';
+                messageDiv.classList.add('error');
+            }
+        }
+
+        // -------- Summary Pages --------
+        async function loadExpenseSummary() {
+            try {
+                const res = await fetch(`http://localhost:8080/api/expenses/user/${userId}`);
+                const expenses = await res.json();
+                let rows = expenses.map(e => `<tr>
+                    <td>${e.id}</td>
+                    <td>${e.amount}</td>
+                    <td>${e.category}</td>
+                    <td>${e.date}</td>
+                    <td>${e.description}</td>
+                </tr>`).join('');
+                mainContainer.innerHTML = `
+                    <h2>Expense Summary</h2>
+                    <table class="table">
+                        <thead>
+                            <tr><th>ID</th><th>Amount</th><th>Category</th><th>Date</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } catch(err) {
+                console.error(err);
+                mainContainer.innerHTML = '<p>Error loading expenses</p>';
+            }
+        }
+
+        async function loadIncomeSummary() {
+            try {
+                const res = await fetch(`http://localhost:8080/api/incomes/user/${userId}`);
+                const incomes = await res.json();
+                let rows = incomes.map(i => `<tr>
+                    <td>${i.id}</td>
+                    <td>${i.amount}</td>
+                    <td>${i.source}</td>
+                    <td>${i.date}</td>
+                    <td>${i.description}</td>
+                </tr>`).join('');
+                mainContainer.innerHTML = `
+                    <h2>Income Summary</h2>
+                    <table class="table">
+                        <thead>
+                            <tr><th>ID</th><th>Amount</th><th>Source</th><th>Date</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } catch(err) {
+                console.error(err);
+                mainContainer.innerHTML = '<p>Error loading incomes</p>';
+            }
+        }
+
+        async function loadProductSummary() {
+            try {
+                const res = await fetch(`http://localhost:8080/api/products/${userId}`);
+                const products = await res.json();
+                let rows = products.map(p => `<tr>
+                    <td>${p.id}</td>
+                    <td>${p.name}</td>
+                    <td>${p.price}</td>
+                    <td>${p.quantity}</td>
+                </tr>`).join('');
+                mainContainer.innerHTML = `
+                    <h2>Product Summary</h2>
+                    <table class="table">
+                        <thead>
+                            <tr><th>ID</th><th>Name</th><th>Price</th><th>Quantity</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } catch(err) {
+                console.error(err);
+                mainContainer.innerHTML = '<p>Error loading products</p>';
+            }
+        }
+
+        // Load dashboard summary by default
+        loadPage('dashboard-summary');
+    </script>
+</body>
+</html>

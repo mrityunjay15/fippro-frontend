@@ -1,0 +1,221 @@
+:root{
+  --bg: #f7f8fb;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent: linear-gradient(135deg,#6EE7B7,#3B82F6);
+  --primary: #3B82F6;
+  --glass: rgba(255,255,255,0.6);
+  --shadow: 0 6px 18px rgba(15,23,42,0.08);
+  --radius: 12px;
+  --text: #0f172a;
+  --success: #10b981;
+  --danger: #ef4444;
+  --glass-border: rgba(255,255,255,0.4);
+  --card-padding: 18px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:background .4s, color .4s;
+  padding-left: 260px;
+}
+
+@media (max-width:900px){
+  body{padding-left:0}
+}
+
+.sidebar{
+  position:fixed;
+  left:0; top:0; bottom:0;
+  width:240px;
+  padding:22px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-right: 1px solid var(--glass-border);
+  box-shadow:var(--shadow);
+  backdrop-filter: blur(6px);
+  transition:transform .35s ease, width .25s;
+  z-index:50;
+}
+
+.sidebar .brand{
+  display:flex; align-items:center; gap:10px; margin-bottom:18px;
+}
+
+.brand .logo{
+  width:38px; height:38px; border-radius:8px;
+  background:var(--accent); display:flex; align-items:center; justify-content:center;
+  color:white; font-weight:700;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.sidebar nav{display:flex; flex-direction:column; gap:8px;}
+.nav-item{
+  display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px;
+  color:var(--muted); text-decoration:none; font-weight:600;
+  transition: all .22s ease;
+}
+
+.nav-item:hover{
+  background:rgba(255,255,255,0.03); color:var(--text); transform:translateX(6px)
+}
+
+.nav-item.active{
+  background:var(--accent); color:white; box-shadow: 0 6px 20px rgba(15,23,42,0.08)
+}
+
+.nav-item i{width:22px; text-align:center}
+
+.topbar{
+  position:fixed; left:260px; right:0; top:0; height:64px;
+  display:flex; align-items:center; gap:16px; padding:0 18px;
+  background:transparent; z-index:40; transition:left .25s;
+}
+
+.topbar .search{
+  flex:1; display:flex; align-items:center; gap:10px; max-width:760px;
+  background:var(--card); border-radius:12px; padding:8px 12px; box-shadow:var(--shadow);
+}
+
+.topbar .search input{
+  flex:1; border:0; outline:none; background:transparent; color:var(--text)
+}
+
+.topbar .actions{display:flex; gap:12px; align-items:center}
+
+.container{
+  padding:94px 28px 40px 28px;
+  max-width:1200px; margin:0 auto;
+}
+
+.grid{display:grid; gap:18px;}
+.grid-cols-4{ grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width:1100px){ .grid-cols-4{ grid-template-columns: repeat(2,1fr) } }
+@media (max-width:640px){ .grid-cols-4{ grid-template-columns: 1fr } }
+
+.card{
+  background:var(--card);
+  padding:var(--card-padding);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  transition: transform .25s ease, box-shadow .25s ease;
+  border: 1px solid var(--glass-border);
+}
+
+.card:hover{
+  transform: translateY(-6px); box-shadow: 0 18px 40px rgba(2,6,23,0.06)
+}
+
+.summary{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+
+.summary .left{display:flex; gap:12px; align-items:center}
+
+.summary .icon{
+  width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+  color:white; font-weight:700; box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.summary .meta{line-height:1}
+.summary .meta .label{font-size:13px; color:var(--muted)}
+.summary .meta .value{font-size:20px; font-weight:800}
+
+.table{width:100%; border-collapse:collapse}
+.table th, .table td{
+  padding:12px 10px; text-align:left; border-bottom:1px solid rgba(0,0,0,0.04)
+}
+.table tr:hover{ background:rgba(0,0,0,0.02) }
+
+.badge{
+  display:inline-block; padding:6px 8px; border-radius:999px; font-size:12px; font-weight:700
+}
+
+.btn{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:10px; border:0;
+  cursor:pointer; background:var(--primary); color:white; font-weight:700;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.btn:active{ transform: translateY(2px) }
+
+.fab{
+  position:fixed; right:20px; bottom:24px; z-index:60;
+  background:var(--accent); color:white; padding:12px 14px; border-radius:14px; box-shadow:var(--shadow);
+}
+
+.modal-backdrop{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:70;
+  background:rgba(2,6,23,0.45);
+}
+
+.modal{
+  min-width:320px; max-width:760px;
+  background:var(--card); padding:18px; border-radius:14px; box-shadow:var(--shadow);
+  transform:scale(.96); opacity:0; transition: transform .22s, opacity .22s;
+}
+
+.modal.show{ transform:scale(1); opacity:1 }
+
+.loader-overlay{
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  z-index:80; background:rgba(255,255,255,0.6);
+}
+
+.loader{
+  width:72px; height:72px; border-radius:50%;
+  border:8px solid rgba(0,0,0,0.06);
+  border-top-color:var(--primary);
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{ to{ transform:rotate(360deg) } }
+
+@media (max-width:900px){
+  .sidebar{
+    position:fixed; width:100%; height:68px; left:0; top:0; display:flex;
+    align-items:center; padding:10px 12px; gap:10px; overflow:hidden; border-right:0
+  }
+  .sidebar nav{flex-direction:row; gap:6px; overflow:auto}
+  .topbar{left:0; padding-left:14px}
+  .brand .logo{display:none}
+  .container{padding-top:110px}
+}
+
+.text-muted{ color:var(--muted) }
+.flex{display:flex}
+.space-between{justify-content:space-between}
+.p-sm{padding:12px}
+.mt-8{margin-top:8px}
+.mb-8{margin-bottom:8px}
+
+.input{
+  width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--glass-border); background:transparent;
+  color:var(--text); outline:none;
+}
+
+.input:focus{
+  box-shadow: 0 8px 30px rgba(59,130,246,0.08);
+  border-color: rgba(59,130,246,0.18)
+}
+
+.center{display:flex; align-items:center; justify-content:center}
+.kv{ font-size:13px; color:var(--muted) }
+
+#scrollTop{
+  position:fixed; right:20px; bottom:100px; display:none; z-index:90;
+}
+
+.fade-up{ animation:fadeUp .6s ease both }
+
+@keyframes fadeUp {
+  from{ transform: translateY(8px); opacity:0 }
+  to{ transform:none; opacity:1 }
+}

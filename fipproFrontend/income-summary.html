@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Income Summary - FIPPRO</title>
+    <link rel="stylesheet" href="assets/global.css">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">
+            <div class="logo">F</div>
+            <span style="font-weight:700; font-size:18px;">FIPPRO</span>
+        </div>
+        <nav>
+            <a class="nav-item" href="dashboard.html"><i>🏠</i> Dashboard</a>
+            <a class="nav-item" href="expense-summary.html"><i>💸</i> Expenses</a>
+            <a class="nav-item active" href="income-summary.html"><i>💰</i> Income</a>
+            <a class="nav-item" href="product-summary.html"><i>📦</i> Products</a>
+        </nav>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="topbar">
+        <h2>Income Summary</h2>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container fade-up">
+        <div class="card">
+            <h3>Total Income: ₹<span id="totalIncome">0</span></h3>
+        </div>
+
+        <div class="card mt-8">
+            <h3>All Income</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Source</th>
+                        <th>Category</th>
+                        <th>Amount (₹)</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="incomeTableBody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+const userId = localStorage.getItem("userId"); // Must be set on login
+const API_BASE = "http://localhost:8080/api/income";
+
+async function fetchIncome() {
+    try {
+        const response = await fetch(`${API_BASE}/user/${userId}`);
+        const incomes = await response.json();
+
+        let tableBody = document.getElementById("incomeTableBody");
+        tableBody.innerHTML = "";
+        let total = 0;
+
+        incomes.forEach(inc => {
+            total += inc.amount;
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${inc.id}</td>
+                    <td>${inc.title || inc.source || '-'}</td>
+                    <td>${inc.category}</td>
+                    <td>₹${inc.amount}</td>
+                    <td>${inc.date}</td>
+                    <td>${inc.description || '-'}</td>
+                    <td><button class="btn" onclick="deleteIncome(${inc.id})">Delete</button></td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("totalIncome").textContent = total;
+
+    } catch(err) {
+        console.error("Error fetching income", err);
+    }
+}
+
+async function deleteIncome(id) {
+    if (!confirm("Are you sure you want to delete this income?")) return;
+    try {
+        await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
+        alert("Deleted successfully!");
+        fetchIncome();
+    } catch(err) {
+        alert("Failed to delete income!");
+        console.error(err);
+    }
+}
+
+// Initial fetch
+fetchIncome();
+</script>
+
+</body>
+</html>
